@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SharkNinja Weekly Snapshot — W/E 19 Apr 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --red: #D0001A;
+    --dark: #F4F5F7;
+    --mid: #FFFFFF;
+    --card: #FFFFFF;
+    --border: #E2E5EA;
+    --text: #1A1D23;
+    --muted: #6B7280;
+    --accent: #FF6B35;
+    --teal: #0099A8;
+    --blue: #2563EB;
+    --gold: #D97706;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--dark); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--mid);
+    border-bottom: 2px solid var(--red);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo-block { display: flex; align-items: center; gap: 16px; }
+  .logo-shark { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--red); letter-spacing: 2px; }
+  .logo-ninja { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--text); letter-spacing: 2px; }
+  .header-meta { text-align: right; }
+  .header-meta .week { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .header-meta .period { font-size: 16px; font-weight: 600; color: var(--text); }
+
+  /* LAYOUT */
+  .container { max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 32px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* KPI ROW */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi-card.red::before { background: var(--red); }
+  .kpi-card.teal::before { background: var(--teal); }
+  .kpi-card.blue::before { background: var(--blue); }
+  .kpi-card.gold::before { background: var(--gold); }
+  .kpi-card.orange::before { background: var(--accent); }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 42px; line-height: 1; color: var(--text); }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .kpi-value span { font-size: 20px; color: var(--muted); }
+
+  /* CHARTS GRID */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .charts-grid.three { grid-template-columns: 2fr 1fr 1fr; }
+  @media (max-width: 900px) {
+    .charts-grid, .charts-grid.three { grid-template-columns: 1fr; }
+  }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .chart-card.wide { grid-column: span 2; }
+  @media (max-width: 900px) { .chart-card.wide { grid-column: span 1; } }
+  .chart-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .chart-wrap { position: relative; }
+
+  /* STATE TABLE */
+  .state-table { width: 100%; border-collapse: collapse; }
+  .state-table th {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); padding: 8px 12px; text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .state-table th:first-child { text-align: left; }
+  .state-table td { padding: 10px 12px; font-size: 14px; text-align: right; border-bottom: 1px solid #EEF0F3; }
+  .state-table td:first-child { text-align: left; font-weight: 600; }
+  .state-table tr:last-child td { color: var(--red); font-weight: 700; border-top: 1px solid var(--border); }
+  .state-table tr:hover td { background: #F8F9FB; }
+  .bar-inline {
+    display: inline-block; height: 6px; border-radius: 3px;
+    background: var(--red); vertical-align: middle; margin-right: 8px;
+  }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-green { background: rgba(0,201,177,.15); color: var(--teal); }
+  .badge-red   { background: rgba(232,0,29,.15);  color: #ff6b6b; }
+
+  /* STORE TABLE */
+  .store-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .store-table th {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); padding: 8px 10px; text-align: right;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .store-table th:first-child, .store-table th:nth-child(2) { text-align: left; }
+  .store-table td { padding: 9px 10px; text-align: right; border-bottom: 1px solid #EEF0F3; vertical-align: middle; }
+  .store-table td:first-child { text-align: left; font-size: 11px; color: var(--muted); }
+  .store-table td:nth-child(2) { text-align: left; font-weight: 500; }
+  .store-table tr:hover td { background: #F8F9FB; }
+  .ratio-pill {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 12px; font-weight: 600;
+  }
+  .ratio-high { background: rgba(0,201,177,.15); color: var(--teal); }
+  .ratio-mid  { background: rgba(245,158,11,.15); color: var(--gold); }
+  .ratio-low  { background: rgba(232,0,29,.12);   color: #ff7070; }
+
+  /* PRODUCT MIX */
+  .cat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .cat-label { font-size: 12px; color: var(--muted); min-width: 110px; }
+  .cat-bar-wrap { flex: 1; height: 8px; background: #EEF0F3; border-radius: 4px; overflow: hidden; }
+  .cat-bar-fill { height: 100%; border-radius: 4px; transition: width .8s ease; }
+  .cat-count { font-size: 13px; font-weight: 600; min-width: 30px; text-align: right; }
+  .cat-pct { font-size: 11px; color: var(--muted); min-width: 36px; text-align: right; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .tab-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); font-size: 12px; cursor: pointer;
+    transition: all .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .tab-btn.active { background: var(--red); border-color: var(--red); color: white; }
+  .tab-btn:hover:not(.active) { border-color: #444; color: var(--text); }
+
+  /* FOOTER */
+  footer { margin-top: 48px; padding: 20px 24px; border-top: 1px solid var(--border); background: #fff; text-align: center; }
+  footer p { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <div>
+      <span class="logo-shark">SHARK</span><span style="color:var(--border)"> | </span><span class="logo-ninja">NINJA</span>
+    </div>
+    <div style="width:1px;height:32px;background:var(--border)"></div>
+    <div style="font-size:13px;color:var(--muted)">Weekly Field Sales Snapshot</div>
+  </div>
+  <div class="header-meta">
+    <div class="week">Week Ending</div>
+    <div class="period">19 April 2026</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- KPIs -->
+  <div class="section-title">National Overview</div>
+  <div class="kpi-grid">
+    <div class="kpi-card red">
+      <div class="kpi-label">Total Units Sold</div>
+      <div class="kpi-value">458</div>
+      <div class="kpi-sub">Across all states</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="kpi-label">Demonstrations</div>
+      <div class="kpi-value">747</div>
+      <div class="kpi-sub">Customer engagements</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Avg Demo Ratio</div>
+      <div class="kpi-value">1.40<span>x</span></div>
+      <div class="kpi-sub">Units per demo hour</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Active Shifts</div>
+      <div class="kpi-value">79</div>
+      <div class="kpi-sub">Total shifts worked</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Hours Deployed</div>
+      <div class="kpi-value">328</div>
+      <div class="kpi-sub">Field hours total</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Stores Covered</div>
+      <div class="kpi-value">29</div>
+      <div class="kpi-sub">Across 7 states/territories</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="kpi-label">Floor Care Units</div>
+      <div class="kpi-value">189</div>
+      <div class="kpi-sub">#1 category · 41%</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Cooking Units</div>
+      <div class="kpi-value">101</div>
+      <div class="kpi-sub">#2 category · 22%</div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1 -->
+  <div class="section-title">State Performance</div>
+  <div class="charts-grid three">
+    <div class="chart-card">
+      <div class="chart-title">Units Sold by State</div>
+      <div class="chart-wrap"><canvas id="stateUnitsChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Demo Ratio by State</div>
+      <div class="chart-wrap"><canvas id="ratioChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Hours Deployed</div>
+      <div class="chart-wrap"><canvas id="hoursChart" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <!-- State Summary Table -->
+  <div class="charts-grid" style="grid-template-columns:1fr">
+    <div class="chart-card">
+      <div class="chart-title">State Summary</div>
+      <table class="state-table">
+        <thead>
+          <tr>
+            <th>State</th>
+            <th>Shifts</th>
+            <th>Hours</th>
+            <th>Demos</th>
+            <th>Units Sold</th>
+            <th>Ratio</th>
+            <th>Coffee</th>
+            <th>Cooking</th>
+            <th>Floor Care</th>
+            <th>Frozen</th>
+            <th>Beauty</th>
+            <th>Other</th>
+          </tr>
+        </thead>
+        <tbody id="stateTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Product Mix + Demos vs Units -->
+  <div class="section-title">Product & Activity Analysis</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Product Category Mix (Units Sold)</div>
+      <div id="catMix"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Demos vs Units Sold — by State</div>
+      <div class="chart-wrap"><canvas id="demosVsUnits" height="250"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Store Detail -->
+  <div class="section-title">Store-Level Detail</div>
+  <div class="chart-card">
+    <div class="tabs" id="stateTabs"></div>
+    <table class="store-table">
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>Store</th>
+          <th>Ambassador</th>
+          <th>Shifts</th>
+          <th>Hours</th>
+          <th>Demos</th>
+          <th>Units</th>
+          <th>Ratio</th>
+          <th>Coffee</th>
+          <th>Cooking</th>
+          <th>Floor</th>
+          <th>Frozen</th>
+          <th>Beauty</th>
+          <th>Other</th>
+        </tr>
+      </thead>
+      <tbody id="storeTableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <p>SharkNinja Field Sales · Confidential Internal Report · Week Ending 19 April 2026</p>
+</footer>
+
+<script>
+// ===================== DATA =====================
+const stateData = [
+  { state:'ACT', shifts:2,  hours:8,    demos:21,  units:12,  ratio:1.50, coffee:0,  cooking:3,  floor:4,  frozen:2, beauty:1, other:2  },
+  { state:'NSW', shifts:7,  hours:28,   demos:70,  units:32,  ratio:1.14, coffee:4,  cooking:9,  floor:14, frozen:1, beauty:0, other:4  },
+  { state:'QLD', shifts:23, hours:93.9, demos:270, units:126, ratio:1.34, coffee:7,  cooking:29, floor:45, frozen:13,beauty:7, other:25 },
+  { state:'SA',  shifts:9,  hours:40.5, demos:43,  units:58,  ratio:1.43, coffee:6,  cooking:12, floor:28, frozen:6, beauty:0, other:6  },
+  { state:'VIC', shifts:21, hours:89.5, demos:170, units:113, ratio:1.26, coffee:12, cooking:17, floor:51, frozen:5, beauty:4, other:24 },
+  { state:'WA',  shifts:15, hours:60,   demos:149, units:103, ratio:1.72, coffee:10, cooking:24, floor:46, frozen:5, beauty:1, other:17 },
+  { state:'NT',  shifts:2,  hours:8,    demos:24,  units:14,  ratio:1.75, coffee:1,  cooking:7,  floor:1,  frozen:3, beauty:0, other:2  },
+  { state:'TOTAL', shifts:79, hours:327.9, demos:747, units:458, ratio:1.40, coffee:40, cooking:101, floor:189, frozen:35, beauty:13, other:80 }
+];
+
+const storeData = [
+  { state:'ACT', store:'Harvey Norman Fyshwick',      ambassador:'Rahanan Sathiyakumar',      shifts:2, hours:8,   demos:21, units:12, ratio:1.50, coffee:0, cooking:3,  floor:4,  frozen:2, beauty:1, other:2  },
+  { state:'NSW', store:'Harvey Norman Auburn',         ambassador:'Polly Tong',                shifts:2, hours:8,   demos:14, units:9,  ratio:1.13, coffee:0, cooking:4,  floor:4,  frozen:0, beauty:0, other:1  },
+  { state:'NSW', store:'The Good Guys Caringbah',      ambassador:'Risha Awale',               shifts:2, hours:8,   demos:38, units:10, ratio:1.25, coffee:1, cooking:2,  floor:4,  frozen:1, beauty:0, other:2  },
+  { state:'NSW', store:'The Good Guys Castle Hill',    ambassador:'Pak Hay (Anson) Chan',      shifts:1, hours:4,   demos:3,  units:2,  ratio:0.50, coffee:0, cooking:1,  floor:1,  frozen:0, beauty:0, other:0  },
+  { state:'NSW', store:'The Good Guys Kotara',         ambassador:'Liza Chu Pui Chan',         shifts:2, hours:8,   demos:15, units:11, ratio:1.38, coffee:3, cooking:2,  floor:5,  frozen:0, beauty:0, other:1  },
+  { state:'QLD', store:'The Good Guys Carseldine',     ambassador:'Tyler Takiwa Maxwell',      shifts:2, hours:8,   demos:5,  units:13, ratio:1.63, coffee:0, cooking:4,  floor:5,  frozen:2, beauty:1, other:1  },
+  { state:'QLD', store:'The Good Guys Carseldine',     ambassador:'Janelle Jenner',            shifts:2, hours:8,   demos:3,  units:0,  ratio:0.00, coffee:0, cooking:0,  floor:0,  frozen:0, beauty:0, other:0  },
+  { state:'QLD', store:'The Good Guys Kawana Waters',  ambassador:'Jennifer Farrell',          shifts:2, hours:8,   demos:47, units:12, ratio:1.50, coffee:0, cooking:2,  floor:6,  frozen:3, beauty:0, other:1  },
+  { state:'QLD', store:'The Good Guys Loganholme',     ambassador:'Sarah Speller',             shifts:2, hours:8,   demos:61, units:8,  ratio:1.00, coffee:0, cooking:1,  floor:2,  frozen:2, beauty:0, other:3  },
+  { state:'QLD', store:'The Good Guys Pimpama',        ambassador:'Ajay Arnold',               shifts:2, hours:8.9, demos:35, units:21, ratio:2.36, coffee:1, cooking:3,  floor:8,  frozen:2, beauty:0, other:7  },
+  { state:'QLD', store:'Harvey Norman Toowoomba',      ambassador:'Chundu Tamang',             shifts:2, hours:8,   demos:22, units:20, ratio:2.50, coffee:1, cooking:5,  floor:8,  frozen:1, beauty:1, other:4  },
+  { state:'QLD', store:'Harvey Norman Bundall',        ambassador:'Hsin-Yu (Ivy) Tsai',        shifts:2, hours:8,   demos:11, units:5,  ratio:0.63, coffee:0, cooking:0,  floor:2,  frozen:0, beauty:3, other:0  },
+  { state:'QLD', store:'The Good Guys Cairns',         ambassador:'Alisa Tsepelyeva',          shifts:2, hours:8,   demos:17, units:8,  ratio:1.00, coffee:3, cooking:0,  floor:3,  frozen:2, beauty:0, other:0  },
+  { state:'QLD', store:'The Good Guys Helensvale',     ambassador:'Deborah Lynn Combrink',     shifts:1, hours:4.5, demos:9,  units:9,  ratio:2.00, coffee:1, cooking:2,  floor:3,  frozen:0, beauty:1, other:2  },
+  { state:'QLD', store:'The Good Guys Lutwyche',       ambassador:'Carly Castaneda',           shifts:2, hours:8,   demos:0,  units:17, ratio:2.13, coffee:0, cooking:7,  floor:5,  frozen:0, beauty:0, other:5  },
+  { state:'QLD', store:'Harvey Norman Oxley',          ambassador:'Cristina Estabridis',       shifts:1, hours:4,   demos:10, units:9,  ratio:2.25, coffee:0, cooking:5,  floor:1,  frozen:1, beauty:1, other:1  },
+  { state:'QLD', store:'Harvey Norman Townsville',     ambassador:'Michelle Anne Tonna',       shifts:2, hours:8,   demos:38, units:2,  ratio:0.25, coffee:1, cooking:0,  floor:0,  frozen:0, beauty:0, other:1  },
+  { state:'QLD', store:'The Good Guys Robina',         ambassador:'Deborah Lynn Combrink',     shifts:1, hours:4.5, demos:12, units:2,  ratio:0.44, coffee:0, cooking:0,  floor:2,  frozen:0, beauty:0, other:0  },
+  { state:'SA',  store:'Harvey Norman Gepps Cross',    ambassador:'Nidhi Raj Chawla',          shifts:2, hours:8,   demos:15, units:10, ratio:1.25, coffee:0, cooking:1,  floor:8,  frozen:0, beauty:0, other:1  },
+  { state:'SA',  store:'The Good Guys Gepps Cross',    ambassador:'Lakshmisindhuri Vemana',    shifts:2, hours:12.5,demos:6,  units:13, ratio:1.04, coffee:3, cooking:1,  floor:7,  frozen:2, beauty:0, other:0  },
+  { state:'SA',  store:'The Good Guys Marion',         ambassador:'Jinitha Babe',              shifts:1, hours:4,   demos:4,  units:4,  ratio:1.00, coffee:0, cooking:2,  floor:0,  frozen:2, beauty:0, other:0  },
+  { state:'SA',  store:'The Good Guys Mile End',       ambassador:'Kshitij Kishor',            shifts:2, hours:8,   demos:12, units:15, ratio:1.88, coffee:2, cooking:5,  floor:5,  frozen:0, beauty:0, other:3  },
+  { state:'SA',  store:'The Good Guys Hectorville',    ambassador:'Naresh Sivam',              shifts:2, hours:8,   demos:6,  units:16, ratio:2.00, coffee:1, cooking:3,  floor:8,  frozen:2, beauty:0, other:2  },
+  { state:'VIC', store:'Harvey Norman Richmond',       ambassador:'Nihal Raju',                shifts:2, hours:8,   demos:9,  units:9,  ratio:1.13, coffee:0, cooking:2,  floor:3,  frozen:2, beauty:1, other:1  },
+  { state:'VIC', store:'The Good Guys Brighton East',  ambassador:'Thu (Kristen) Le',          shifts:2, hours:8,   demos:8,  units:14, ratio:1.75, coffee:1, cooking:4,  floor:4,  frozen:0, beauty:0, other:5  },
+  { state:'VIC', store:'The Good Guys Dandenong',      ambassador:'Mayursinh Jadeja',          shifts:2, hours:8,   demos:12, units:10, ratio:1.25, coffee:0, cooking:0,  floor:4,  frozen:0, beauty:0, other:6  },
+  { state:'VIC', store:'The Good Guys Essendon',       ambassador:'Vittoria Stornello',        shifts:2, hours:8.5, demos:12, units:8,  ratio:0.94, coffee:1, cooking:1,  floor:5,  frozen:0, beauty:0, other:1  },
+  { state:'VIC', store:'The Good Guys Geelong',        ambassador:'Dulanka Wick',              shifts:2, hours:8,   demos:7,  units:6,  ratio:0.75, coffee:1, cooking:2,  floor:1,  frozen:0, beauty:1, other:1  },
+  { state:'VIC', store:'The Good Guys Thomastown',     ambassador:'Emad Sammimi Pourkouchaki', shifts:2, hours:13,  demos:25, units:22, ratio:1.69, coffee:5, cooking:1,  floor:10, frozen:0, beauty:1, other:5  },
+  { state:'VIC', store:'Harvey Norman Thomastown',     ambassador:'Nico Mastronardi',          shifts:2, hours:8,   demos:6,  units:2,  ratio:0.25, coffee:0, cooking:1,  floor:1,  frozen:0, beauty:0, other:0  },
+  { state:'VIC', store:'The Good Guys Maribyrnong',    ambassador:'Rebeca Vincent',            shifts:2, hours:8,   demos:12, units:13, ratio:1.63, coffee:1, cooking:2,  floor:8,  frozen:0, beauty:0, other:2  },
+  { state:'VIC', store:'The Good Guys Ballarat',       ambassador:'Nancy Lekhi',               shifts:2, hours:8,   demos:29, units:9,  ratio:1.13, coffee:3, cooking:3,  floor:1,  frozen:0, beauty:1, other:1  },
+  { state:'VIC', store:'The Good Guys Nunawading',     ambassador:'Timothy Nicolaides',        shifts:1, hours:4,   demos:4,  units:4,  ratio:1.00, coffee:0, cooking:1,  floor:1,  frozen:1, beauty:0, other:1  },
+  { state:'VIC', store:'The Good Guys Hoppers Crossing',ambassador:'Sagal Duale',             shifts:2, hours:8,   demos:46, units:16, ratio:2.00, coffee:0, cooking:0,  floor:13, frozen:2, beauty:0, other:1  },
+  { state:'WA',  store:'Harvey Norman Osborne Park',   ambassador:'Claire Ochunga',            shifts:2, hours:8,   demos:14, units:3,  ratio:0.38, coffee:0, cooking:2,  floor:1,  frozen:0, beauty:0, other:0  },
+  { state:'WA',  store:'The Good Guys Cannington',     ambassador:'Kencho Tshering',           shifts:2, hours:8,   demos:10, units:10, ratio:1.25, coffee:3, cooking:1,  floor:3,  frozen:1, beauty:0, other:2  },
+  { state:'WA',  store:'The Good Guys Cockburn',       ambassador:'Srishti Dindayal',          shifts:1, hours:4,   demos:10, units:6,  ratio:1.50, coffee:2, cooking:1,  floor:1,  frozen:1, beauty:0, other:1  },
+  { state:'WA',  store:'The Good Guys Joondalup',      ambassador:'Vidya Sri Perala',          shifts:2, hours:8,   demos:40, units:13, ratio:1.63, coffee:0, cooking:3,  floor:7,  frozen:1, beauty:0, other:2  },
+  { state:"WA",  store:"The Good Guys O'Connor",       ambassador:'Pema Dorji',                shifts:2, hours:8,   demos:20, units:15, ratio:1.88, coffee:2, cooking:2,  floor:8,  frozen:0, beauty:0, other:3  },
+  { state:'WA',  store:'The Good Guys Osborne Park',   ambassador:'Miguel Angel',              shifts:2, hours:8,   demos:16, units:14, ratio:1.75, coffee:0, cooking:6,  floor:4,  frozen:1, beauty:0, other:3  },
+  { state:'WA',  store:'The Good Guys Malaga',         ambassador:'Rusa Sarros',               shifts:2, hours:8,   demos:21, units:21, ratio:2.63, coffee:0, cooking:6,  floor:10, frozen:1, beauty:0, other:4  },
+  { state:'WA',  store:'The Good Guys Rockingham',     ambassador:'Ingrid Lemes Santos',       shifts:2, hours:8,   demos:18, units:21, ratio:2.63, coffee:3, cooking:3,  floor:12, frozen:0, beauty:1, other:2  },
+  { state:'NT',  store:'Harvey Norman Darwin',          ambassador:'Mukund Rajesh',             shifts:2, hours:8,   demos:24, units:14, ratio:1.75, coffee:1, cooking:7,  floor:1,  frozen:3, beauty:0, other:2  },
+];
+
+// ===================== STATE TABLE =====================
+const tbody = document.getElementById('stateTableBody');
+const maxUnits = Math.max(...stateData.filter(d=>d.state!=='TOTAL').map(d=>d.units));
+stateData.forEach(d => {
+  const isTotal = d.state === 'TOTAL';
+  const barW = isTotal ? 0 : Math.round((d.units/maxUnits)*80);
+  const ratioClass = d.ratio >= 1.5 ? 'badge-green' : 'badge-red';
+  tbody.innerHTML += `
+    <tr>
+      <td>${isTotal ? 'Grand Total' : d.state}</td>
+      <td>${d.shifts}</td>
+      <td>${d.hours.toFixed(1)}</td>
+      <td>${d.demos}</td>
+      <td><span class="bar-inline" style="width:${barW}px"></span>${d.units}</td>
+      <td><span class="badge ${ratioClass}">${d.ratio.toFixed(2)}x</span></td>
+      <td>${d.coffee || '-'}</td>
+      <td>${d.cooking}</td>
+      <td>${d.floor}</td>
+      <td>${d.frozen || '-'}</td>
+      <td>${d.beauty || '-'}</td>
+      <td>${d.other}</td>
+    </tr>`;
+});
+
+// ===================== CHART COLORS =====================
+const COLORS = ['#E8001D','#00C9B1','#3B82F6','#F59E0B','#FF6B35','#A855F7','#22C55E'];
+const states = stateData.filter(d=>d.state!=='TOTAL').map(d=>d.state);
+
+// ===================== BAR: UNITS BY STATE =====================
+new Chart(document.getElementById('stateUnitsChart'), {
+  type: 'bar',
+  data: {
+    labels: states,
+    datasets: [{
+      data: stateData.filter(d=>d.state!=='TOTAL').map(d=>d.units),
+      backgroundColor: COLORS,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#6B7280' }, grid: { color: '#EEF0F3' } },
+      y: { ticks: { color: '#6B7280' }, grid: { color: '#EEF0F3' } }
+    }
+  }
+});
+
+// ===================== BAR: RATIO =====================
+new Chart(document.getElementById('ratioChart'), {
+  type: 'bar',
+  data: {
+    labels: states,
+    datasets: [{
+      data: stateData.filter(d=>d.state!=='TOTAL').map(d=>d.ratio),
+      backgroundColor: stateData.filter(d=>d.state!=='TOTAL').map(d =>
+        d.ratio >= 1.5 ? '#0099A8' : d.ratio >= 1.0 ? '#D97706' : '#D0001A'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#6B7280' }, grid: { color: '#EEF0F3' } },
+      y: {
+        ticks: { color: '#6B7280', callback: v => v.toFixed(1)+'x' },
+        grid: { color: '#EEF0F3' }
+      }
+    }
+  }
+});
+
+// ===================== DOUGHNUT: HOURS =====================
+new Chart(document.getElementById('hoursChart'), {
+  type: 'doughnut',
+  data: {
+    labels: states,
+    datasets: [{
+      data: stateData.filter(d=>d.state!=='TOTAL').map(d=>d.hours),
+      backgroundColor: COLORS,
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#6B7280', font: { size: 11 }, boxWidth: 12, padding: 10 }
+      }
+    },
+    cutout: '60%'
+  }
+});
+
+// ===================== SCATTER: DEMOS VS UNITS =====================
+const scatterData = stateData.filter(d=>d.state!=='TOTAL').map((d,i)=>({
+  x: d.demos, y: d.units,
+  label: d.state,
+  backgroundColor: COLORS[i]
+}));
+new Chart(document.getElementById('demosVsUnits'), {
+  type: 'scatter',
+  data: {
+    datasets: scatterData.map(p => ({
+      label: p.label,
+      data: [{ x: p.x, y: p.y }],
+      backgroundColor: p.backgroundColor,
+      pointRadius: 10,
+    }))
+  },
+  options: {
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#6B7280', font: { size: 11 }, boxWidth: 12, padding: 10 }
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label} — Demos: ${ctx.parsed.x}, Units: ${ctx.parsed.y}`
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Demonstrations', color: '#6B7280' }, ticks: { color: '#6B7280' }, grid: { color: '#EEF0F3' } },
+      y: { title: { display: true, text: 'Units Sold', color: '#6B7280' }, ticks: { color: '#6B7280' }, grid: { color: '#EEF0F3' } }
+    }
+  }
+});
+
+// ===================== PRODUCT MIX BARS =====================
+const cats = [
+  { label: 'Floor Care',  count: 189, color: '#E8001D' },
+  { label: 'Cooking',     count: 101, color: '#F59E0B' },
+  { label: 'Other',       count: 80,  color: '#6B7280' },
+  { label: 'Coffee Mach.', count: 40, color: '#00C9B1' },
+  { label: 'Frozen',      count: 35,  color: '#3B82F6' },
+  { label: 'Beauty',      count: 13,  color: '#A855F7' },
+];
+const total = cats.reduce((s,c)=>s+c.count,0);
+const catMixEl = document.getElementById('catMix');
+cats.forEach(c => {
+  const pct = ((c.count/total)*100).toFixed(1);
+  catMixEl.innerHTML += `
+    <div class="cat-row">
+      <div class="cat-label">${c.label}</div>
+      <div class="cat-bar-wrap">
+        <div class="cat-bar-fill" style="width:${pct}%;background:${c.color}"></div>
+      </div>
+      <div class="cat-count">${c.count}</div>
+      <div class="cat-pct">${pct}%</div>
+    </div>`;
+});
+
+// ===================== STORE TABLE WITH TABS =====================
+const allStates = ['All', ...new Set(storeData.map(d=>d.state))];
+const tabsEl = document.getElementById('stateTabs');
+const storeTbody = document.getElementById('storeTableBody');
+
+function renderStores(filter) {
+  const rows = filter === 'All' ? storeData : storeData.filter(d=>d.state===filter);
+  storeTbody.innerHTML = '';
+  rows.forEach(d => {
+    const rc = d.ratio >= 1.5 ? 'ratio-high' : d.ratio >= 1.0 ? 'ratio-mid' : 'ratio-low';
+    storeTbody.innerHTML += `
+      <tr>
+        <td>${d.state}</td>
+        <td>${d.store}</td>
+        <td>${d.ambassador}</td>
+        <td>${d.shifts}</td>
+        <td>${d.hours.toFixed(1)}</td>
+        <td>${d.demos}</td>
+        <td><strong>${d.units}</strong></td>
+        <td><span class="ratio-pill ${rc}">${d.ratio.toFixed(2)}x</span></td>
+        <td>${d.coffee||'-'}</td>
+        <td>${d.cooking||'-'}</td>
+        <td>${d.floor||'-'}</td>
+        <td>${d.frozen||'-'}</td>
+        <td>${d.beauty||'-'}</td>
+        <td>${d.other||'-'}</td>
+      </tr>`;
+  });
+}
+
+allStates.forEach(s => {
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn' + (s==='All' ? ' active' : '');
+  btn.textContent = s;
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderStores(s);
+  };
+  tabsEl.appendChild(btn);
+});
+renderStores('All');
+</script>
+</body>
+</html>
